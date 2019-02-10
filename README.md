@@ -1,1 +1,1 @@
-# Passive-Data-Kit-Client-Python
+# PassiveDataKit-Client-Python
