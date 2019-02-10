@@ -96,7 +96,7 @@ The package is intended to be installed with `pip`:
     pip install git+https://github.com/audaciouscode/PassiveDataKit-Client-Python.git
 
 When the library reaches maturity, it will be made available on PyPi as 
-`passive-data-kit-client`.
+[`passive-data-kit-client`](https://pypi.org/project/passive-data-kit-client/).
 
 ## Major Outstanding Items
 
