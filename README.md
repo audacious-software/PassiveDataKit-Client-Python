@@ -109,3 +109,4 @@ The following items are on the roadmap for support:
   Currently items may be accessed by index, but not range.
 
 If you encounter any bugs or other issues, please [add an issue](https://github.com/audaciouscode/PassiveDataKit-Client-Python/issues).
+
