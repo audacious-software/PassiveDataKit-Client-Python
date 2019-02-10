@@ -10,6 +10,9 @@ with open('README.md') as f:
 with open('LICENSE') as f:
     license = f.read()
 
+with open('requirements.txt') as f:
+    requirements = f.read()
+
 setup(
     name='passive-data-kit-client',
     version='0.1.0',
@@ -19,6 +22,7 @@ setup(
     author_email='chris@audacious-software.com',
     url='https://github.com/audaciouscode/PassiveDataKit-Client-Python',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests', 'docs')),
+	install_requires=requirements.strip().split('\n'),
 )
 
