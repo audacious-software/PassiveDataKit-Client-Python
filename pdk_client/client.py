@@ -60,18 +60,16 @@ class PDKClient(object):
 
 
     def query_data_points(self, page_size=500, **kwargs):
-        # Add filter to recorded field so data set does not grow as data is added while querying...
-
-        now = arrow.utcnow().datetime
-
-        return PDKDataPointQuery(self.token, self.site_url, page_size=page_size, **kwargs).filter(recorded__lte=now)
+        return PDKDataPointQuery(self.token, self.site_url, page_size=page_size, **kwargs)
 
 
 class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
-    def __init__(self, token, site_url, page_size=500, **kwargs):
+    def __init__(self, token, site_url, page_size=500, latest=None, **kwargs):
         self.token = token
         self.site_url = site_url
         self.page_size = page_size
+
+        self.latest = latest
 
         self.filters = []
         self.excludes = []
@@ -87,7 +85,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
         self.current_page = None
 
     def filter(self, **kwargs):
-        query = PDKDataPointQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataPointQuery(self.token, self.site_url, self.page_size, self.latest)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
@@ -98,7 +96,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
         return query
 
     def exclude(self, **kwargs):
-        query = PDKDataPointQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataPointQuery(self.token, self.site_url, self.page_size, self.latest)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
@@ -109,7 +107,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
         return query
 
     def order_by(self, *args):
-        query = PDKDataPointQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataPointQuery(self.token, self.site_url, self.page_size, self.latest)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
@@ -179,11 +177,15 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
             'order_by': json.dumps(self.order_bys, cls=DatetimeEncoder),
         }
 
+        if self.latest is not None:
+            payload['latest'] = self.latest,
+
         fetch_page = requests.post(self.site_url + '/api/data-points.json', data=payload)
 
         if fetch_page.status_code == requests.codes.ok:
             response_payload = fetch_page.json()
 
+            self.latest = response_payload['latest']
             self.total_count = response_payload['count']
             self.page_index = response_payload['page_index']
             self.page_size = response_payload['page_size']
