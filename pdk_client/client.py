@@ -17,8 +17,10 @@ class PDKClient:
         self.site_url = kwargs['site_url']
         self.expires = None
         self.token = None
-        
-        if ('username' in kwargs) and ('password' in kwargs):
+
+        if 'token' in kwargs:
+            self.token = kwargs['token']
+        elif ('username' in kwargs) and ('password' in kwargs):
             self.generate_new_token(kwargs['username'], kwargs['password'])
 
 
@@ -59,10 +61,10 @@ class PDKClient:
 
     
     def query_data_points(self, page_size=500, *args, **kwargs):
-    	# Add filter to recorded field so data set does not grow as data is added while querying...
-    	
-    	now = arrow.utcnow().datetime
-    	
+        # Add filter to recorded field so data set does not grow as data is added while querying...
+        
+        now = arrow.utcnow().datetime
+        
         return PDKDataPointQuery(self.token, self.site_url, page_size=page_size, **kwargs).filter(recorded__lte=now)
     
     
@@ -132,12 +134,12 @@ class PDKDataPointQuery:
         return self
 
     def next(self):
-        if self.current_index >= self.count:
+        if self.current_index >= self.total_count:
             raise StopIteration
 
-        if self.current_index >= self.page_index * self.page_size:
+        if self.current_index >= (self.page_index + 1) * self.page_size:
             self.load_page(self.page_index + 1)
-            
+
         value = self.current_page[self.current_index % self.page_size]
         
         self.current_index += 1
@@ -164,6 +166,11 @@ class PDKDataPointQuery:
             eprint('SLICE NOT YET SUPPORTED: ' + str(slice_item))
             return []
 
+    def first(self):
+        return self[0]
+        
+    def last(self):
+        return self[-1]
 
     def load_page(self, page_number):
         self.page_index = page_number
