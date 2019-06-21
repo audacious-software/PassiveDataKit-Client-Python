@@ -66,13 +66,8 @@ class PDKClient(object):
         # Add filter to recorded field so data set does not grow as data is added while querying...
 
         now = arrow.utcnow().datetime
-        
-        page_size = PDK_API_DEFAULT_PAGE_SIZE
-        
-        if 'page_size' in kwargs:
-            page_size = kwargs['page_size']
 
-        return PDKDataPointQuery(self.token, self.site_url, page_size=page_size, **kwargs).filter(recorded__lte=now)
+        return PDKDataPointQuery(self.token, self.site_url, **kwargs).filter(recorded__lte=now)
 
 
 class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
@@ -81,9 +76,10 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
         self.site_url = site_url
 
         page_size = PDK_API_DEFAULT_PAGE_SIZE
-        
+
         if 'page_size' in kwargs:
             page_size = kwargs['page_size']
+            del kwargs['page_size']
 
         self.page_size = page_size
 
