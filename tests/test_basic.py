@@ -9,7 +9,7 @@ class BasicTestSuite(unittest.TestCase):
     """Basic test cases."""
 
     def test_absolute_truth_and_meaning(self):
-        assert True
+        assert True # nosec
 
 
 if __name__ == '__main__':
