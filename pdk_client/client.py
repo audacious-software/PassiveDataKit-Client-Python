@@ -10,6 +10,8 @@ import sys
 import arrow
 import requests
 
+PDK_API_DEFAULT_PAGE_SIZE = 500
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -60,18 +62,29 @@ class PDKClient(object):
 
         return True
 
-    def query_data_points(self, page_size=500, *args, **kwargs):
+    def query_data_points(self, *args, **kwargs): # pylint: disable=unused-argument
         # Add filter to recorded field so data set does not grow as data is added while querying...
-        
+
         now = arrow.utcnow().datetime
         
+        page_size = PDK_API_DEFAULT_PAGE_SIZE
+        
+        if 'page_size' in kwargs:
+            page_size = kwargs['page_size']
+
         return PDKDataPointQuery(self.token, self.site_url, page_size=page_size, **kwargs).filter(recorded__lte=now)
-    
-    
-class PDKDataPointQuery:
-    def __init__(self, token, site_url, page_size=500, *args, **kwargs):
+
+
+class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
+    def __init__(self, token, site_url, *args, **kwargs): # pylint: disable=unused-argument
         self.token = token
         self.site_url = site_url
+
+        page_size = PDK_API_DEFAULT_PAGE_SIZE
+        
+        if 'page_size' in kwargs:
+            page_size = kwargs['page_size']
+
         self.page_size = page_size
 
         self.filters = []
@@ -169,7 +182,7 @@ class PDKDataPointQuery:
 
     def first(self):
         return self[0]
-        
+
     def last(self):
         return self[-1]
 
