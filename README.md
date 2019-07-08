@@ -39,6 +39,20 @@ inspiration and functions very similarly.
     # Get the data points for a specific generator, excluding specific source.
     exclude_query = query.filter(generator_identifier='pdk-device-battery').exclude(source='source-id').order_by('created')
     
+    # Create a data source query object
+    query = client.query_data_sources(page_size=PAGE_SIZE)
+    
+    # Return the total number of data sources on the server.
+    query.count()
+    
+    # Filter sources
+    filtered_query = query.filter(identifier__startswith='1')
+    query.filter(identifier__startswith='1').count()
+    
+    # Iterate over all matching items in query.
+    for source in filtered_query:
+        print(json.dumps(source, indent=2))
+    
 ## Notes
 
 Behind the scenes, this library obtains a time-limited token for querying the 
@@ -99,7 +113,7 @@ When the library reaches maturity, it will be made available on PyPi as
 
 The following items are on the roadmap for support:
 
-* Support for querying other Passive Data Kit types: data sources, alerts, exports.
+* Support for querying other Passive Data Kit types: ~~data sources~~, ~~alerts~~, exports.
 * Support for [Q-object](https://docs.djangoproject.com/en/1.11/topics/db/queries/#complex-lookups-with-q-objects) equivalents, supporting more flexible Boolean parameters.
 * Support for renewing tokens.
 * Full support for [slices](https://www.w3schools.com/python/ref_func_slice.asp) in querys. 
