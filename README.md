@@ -10,6 +10,7 @@ inspiration and functions very similarly.
 
 ## Usage
 
+    import json
     from pdk_client import PDKClient
     
     # Create a client object.
