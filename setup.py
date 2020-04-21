@@ -15,7 +15,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='passive-data-kit-client',
-    version='0.1.0',
+    version='0.1.1',
     description='Client library for interacting with Passive Data Kit servers',
     long_description=readme,
     author='Chris J. Karr',

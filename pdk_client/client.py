@@ -5,26 +5,70 @@ from __future__ import print_function
 
 import datetime
 import json
-import sys
+import logging
+import time
 
 import arrow
 import requests
 
-PDK_API_DEFAULT_PAGE_SIZE = 500
+PDK_API_DEFAULT_PAGE_SIZE = 100
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+def post_request_with_retries(url, payload, max_retry_duration=120, initial_retry_duration=3.75, server_timeout=60):
+    query = None
+    last_error = None
+
+    while initial_retry_duration <= max_retry_duration:
+        try:
+            query = None
+
+            if server_timeout is not None:
+                query = requests.post(url, data=payload, timeout=server_timeout)
+            else:
+                query = requests.post(url, data=payload)
+
+            print('CODE: ' + str(query.status_code))
+
+            if query.status_code == requests.codes.ok:
+                return query
+        except requests.exceptions.HTTPError as error:
+            logging.warning(str(error))
+            logging.warning('Retrying in %.2f seconds...', initial_retry_duration)
+
+            last_error = error
+        except requests.exceptions.Timeout as error:
+            logging.warning(str(error))
+            logging.warning('Retrying in %.2f seconds...', initial_retry_duration)
+
+            last_error = error
+        except requests.exceptions.ConnectionError as error:
+            logging.warning(str(error))
+            logging.warning('Retrying in %.2f seconds...', initial_retry_duration)
+
+            last_error = error
+
+        time.sleep(initial_retry_duration)
+
+        initial_retry_duration *= 2
+
+    if last_error is not None:
+        raise last_error # pylint: disable=raising-bad-type
+
+    raise Exception('Unknown error occurred.')
 
 class PDKClient(object):
     def __init__(self, **kwargs):
         self.site_url = kwargs['site_url']
         self.expires = None
         self.token = None
+        self.timeout = None
 
         if 'token' in kwargs:
             self.token = kwargs['token']
         elif ('username' in kwargs) and ('password' in kwargs):
             self.generate_new_token(kwargs['username'], kwargs['password'])
+
+        if 'timeout' in kwargs:
+            self.timeout = kwargs['timeout']
 
 
     def generate_new_token(self, username, password):
@@ -33,7 +77,7 @@ class PDKClient(object):
             'password': password,
         }
 
-        fetch_token = requests.post(self.site_url + '/api/request-token.json', data=payload)
+        fetch_token = post_request_with_retries(self.site_url + '/api/request-token.json', payload, server_timeout=self.timeout)
 
         if fetch_token.status_code == requests.codes.ok:
             response_payload = fetch_token.json()
@@ -67,16 +111,17 @@ class PDKClient(object):
 
         now = arrow.utcnow().datetime
 
-        return PDKDataPointQuery(self.token, self.site_url, **kwargs).filter(recorded__lte=now)
+        return PDKDataPointQuery(self.token, self.site_url, self.timeout, **kwargs).filter(recorded__lte=now)
 
     def query_data_sources(self, *args, **kwargs): # pylint: disable=unused-argument
-        return PDKDataSourceQuery(self.token, self.site_url, **kwargs).exclude(pk=None)
+        return PDKDataSourceQuery(self.token, self.site_url, self.timeout, **kwargs).exclude(pk=None)
 
 
 class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
-    def __init__(self, token, site_url, *args, **kwargs): # pylint: disable=unused-argument
+    def __init__(self, token, site_url, timeout, *args, **kwargs): # pylint: disable=unused-argument
         self.token = token
         self.site_url = site_url
+        self.timeout = timeout
 
         page_size = PDK_API_DEFAULT_PAGE_SIZE
 
@@ -175,7 +220,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
 
             return self.current_page[index % self.page_size]
         elif isinstance(slice_item, slice):
-            eprint('SLICE NOT YET SUPPORTED: ' + str(slice_item))
+            logging.error('SLICE NOT YET SUPPORTED: %s', str(slice_item))
 
         return []
 
@@ -197,7 +242,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
             'order_by': json.dumps(self.order_bys, cls=DatetimeEncoder),
         }
 
-        fetch_page = requests.post(self.site_url + '/api/data-points.json', data=payload)
+        fetch_page = post_request_with_retries(self.site_url + '/api/data-points.json', payload, server_timeout=self.timeout)
 
         if fetch_page.status_code == requests.codes.ok:
             response_payload = fetch_page.json()
@@ -222,9 +267,10 @@ class DatetimeEncoder(json.JSONEncoder):
 
 
 class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
-    def __init__(self, token, site_url, *args, **kwargs): # pylint: disable=unused-argument
+    def __init__(self, token, site_url, timeout, *args, **kwargs): # pylint: disable=unused-argument
         self.token = token
         self.site_url = site_url
+        self.timeout = timeout
 
         page_size = PDK_API_DEFAULT_PAGE_SIZE
 
@@ -323,7 +369,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
 
             return self.current_page[index % self.page_size]
         elif isinstance(slice_item, slice):
-            eprint('SLICE NOT YET SUPPORTED: ' + str(slice_item))
+            logging.error('SLICE NOT YET SUPPORTED: %s', str(slice_item))
 
         return []
 
@@ -345,7 +391,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
             'order_by': json.dumps(self.order_bys, cls=DatetimeEncoder),
         }
 
-        fetch_page = requests.post(self.site_url + '/api/data-sources.json', data=payload)
+        fetch_page = post_request_with_retries(self.site_url + '/api/data-sources.json', payload, server_timeout=self.timeout)
 
         if fetch_page.status_code == requests.codes.ok:
             response_payload = fetch_page.json()
