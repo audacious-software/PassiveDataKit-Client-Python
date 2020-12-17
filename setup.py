@@ -1,3 +1,4 @@
+# pylint: skip-file
 # -*- coding: utf-8 -*-
 
 # Learn more: https://github.com/kennethreitz/setup.py
