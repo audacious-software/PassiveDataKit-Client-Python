@@ -3,7 +3,7 @@
 
 from __future__ import print_function
 
-from builtins import str, object
+from builtins import str, object # pylint: disable=redefined-builtin
 
 import datetime
 import json
