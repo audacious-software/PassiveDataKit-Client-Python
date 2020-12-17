@@ -3,6 +3,10 @@
 
 from __future__ import print_function
 
+from builtins import str, object
+
+from past.utils import old_div
+
 import datetime
 import json
 import logging
@@ -26,7 +30,8 @@ def post_request_with_retries(url, payload, max_retry_duration=120, initial_retr
             else:
                 query = requests.post(url, data=payload)
 
-            print('CODE: ' + str(query.status_code))
+            if query.status_code != 200:        
+                print('CODE: ' + str(query.status_code))
 
             if query.status_code == requests.codes.ok:
                 return query
@@ -190,7 +195,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
 
         return self
 
-    def next(self):
+    def __next__(self):
         if self.current_index >= self.total_count:
             raise StopIteration
 
@@ -204,7 +209,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
         return value
 
     def __getitem__(self, slice_item):
-        if isinstance(slice_item, (int, long)):
+        if isinstance(slice_item, int):
             index = slice_item
 
             if self.current_page is None:
@@ -216,7 +221,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
             if (index >= (self.page_index * self.page_size)) and (index < ((self.page_index + 1) * self.page_size)):
                 return self.current_page[index % self.page_size]
 
-            self.load_page(int(index / self.page_size))
+            self.load_page(int(old_div(index, self.page_size)))
 
             return self.current_page[index % self.page_size]
         elif isinstance(slice_item, slice):
@@ -339,7 +344,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
 
         return self
 
-    def next(self):
+    def __next__(self):
         if self.current_index >= self.total_count:
             raise StopIteration
 
@@ -353,7 +358,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
         return value
 
     def __getitem__(self, slice_item):
-        if isinstance(slice_item, (int, long)):
+        if isinstance(slice_item, int):
             index = slice_item
 
             if self.current_page is None:
@@ -365,7 +370,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
             if (index >= (self.page_index * self.page_size)) and (index < ((self.page_index + 1) * self.page_size)):
                 return self.current_page[index % self.page_size]
 
-            self.load_page(int(index / self.page_size))
+            self.load_page(int(old_div(index, self.page_size)))
 
             return self.current_page[index % self.page_size]
         elif isinstance(slice_item, slice):
