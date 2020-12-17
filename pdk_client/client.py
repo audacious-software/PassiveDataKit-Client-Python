@@ -1,9 +1,9 @@
-# pylint: disable=line-too-long, no-member
+# pylint: disable=line-too-long, no-member, chained-comparison
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
 
-from builtins import str, object # pylint: redefined-builtin
+from builtins import str, object # pylint: disable=redefined-builtin
 
 import datetime
 import json
@@ -208,8 +208,11 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
 
         return value
 
+    def next(self):
+        return self.__next__()
+
     def __getitem__(self, slice_item):
-        if isinstance(slice_item, int):
+        if isinstance(slice_item, int): # pylint: disable=no-else-return
             index = slice_item
 
             if self.current_page is None:
@@ -357,8 +360,11 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
 
         return value
 
+    def next(self):
+        return self.__next__()
+
     def __getitem__(self, slice_item):
-        if isinstance(slice_item, int):
+        if isinstance(slice_item, int): # pylint: disable=no-else-return
             index = slice_item
 
             if self.current_page is None:
