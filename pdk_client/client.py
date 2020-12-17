@@ -3,9 +3,7 @@
 
 from __future__ import print_function
 
-from builtins import str, object
-
-from past.utils import old_div
+from builtins import str, object # pylint: redefined-builtin
 
 import datetime
 import json
@@ -14,6 +12,8 @@ import time
 
 import arrow
 import requests
+
+from past.utils import old_div
 
 PDK_API_DEFAULT_PAGE_SIZE = 100
 
@@ -30,7 +30,7 @@ def post_request_with_retries(url, payload, max_retry_duration=120, initial_retr
             else:
                 query = requests.post(url, data=payload)
 
-            if query.status_code != 200:        
+            if query.status_code != 200:
                 print('CODE: ' + str(query.status_code))
 
             if query.status_code == requests.codes.ok:
@@ -60,7 +60,7 @@ def post_request_with_retries(url, payload, max_retry_duration=120, initial_retr
 
     raise Exception('Unknown error occurred.')
 
-class PDKClient(object):
+class PDKClient(object): # pylint: disable=useless-object-inheritance
     def __init__(self, **kwargs):
         self.site_url = kwargs['site_url']
         self.expires = None
@@ -122,7 +122,7 @@ class PDKClient(object):
         return PDKDataSourceQuery(self.token, self.site_url, self.timeout, **kwargs).exclude(pk=None)
 
 
-class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes
+class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes, useless-object-inheritance
     def __init__(self, token, site_url, timeout, *args, **kwargs): # pylint: disable=unused-argument
         self.token = token
         self.site_url = site_url
@@ -271,7 +271,7 @@ class DatetimeEncoder(json.JSONEncoder):
             return str(obj)
 
 
-class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
+class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes, useless-object-inheritance
     def __init__(self, token, site_url, timeout, *args, **kwargs): # pylint: disable=unused-argument
         self.token = token
         self.site_url = site_url
