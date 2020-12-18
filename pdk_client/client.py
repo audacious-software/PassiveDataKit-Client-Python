@@ -218,6 +218,8 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
             if self.current_page is None:
                 self.load_page(0)
 
+            print('TOTAL: ' + str(self.total_count))
+
             if index < 0:
                 index = self.total_count + index
 
@@ -233,10 +235,16 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
         return []
 
     def first(self):
-        return self[0]
+        if self.total_count is not None and self.total_count > 0:
+            return self[0]
+
+        return None
 
     def last(self):
-        return self[-1]
+        if self.total_count is not None and self.total_count > 0:
+            return self[-1]
+
+        return None
 
     def load_page(self, page_number):
         self.page_index = page_number
