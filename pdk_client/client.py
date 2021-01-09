@@ -218,13 +218,14 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
             if self.current_page is None:
                 self.load_page(0)
 
-            print('TOTAL: ' + str(self.total_count))
-
             if index < 0:
                 index = self.total_count + index
 
             if (index >= (self.page_index * self.page_size)) and (index < ((self.page_index + 1) * self.page_size)):
-                return self.current_page[index % self.page_size]
+                try:
+                    return self.current_page[index % self.page_size]
+                except IndexError:
+                    return None
 
             self.load_page(int(old_div(index, self.page_size)))
 
@@ -235,12 +236,16 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
         return []
 
     def first(self):
+        self.load_page(0)
+
         if self.total_count is not None and self.total_count > 0:
             return self[0]
 
         return None
 
     def last(self):
+        self.load_page(0)
+
         if self.total_count is not None and self.total_count > 0:
             return self[-1]
 
