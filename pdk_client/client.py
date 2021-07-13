@@ -150,7 +150,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
         self.current_page = None
 
     def filter(self, **kwargs):
-        query = PDKDataPointQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataPointQuery(self.token, self.site_url, self.timeout, page_size=self.page_size)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
@@ -161,7 +161,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
         return query
 
     def exclude(self, **kwargs):
-        query = PDKDataPointQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataPointQuery(self.token, self.site_url, self.timeout, page_size=self.page_size)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
@@ -172,7 +172,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
         return query
 
     def order_by(self, *args):
-        query = PDKDataPointQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataPointQuery(self.token, self.site_url, self.timeout, page_size=self.page_size)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
@@ -263,7 +263,9 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
             'order_by': json.dumps(self.order_bys, cls=DatetimeEncoder),
         }
 
-        fetch_page = post_request_with_retries(self.site_url + '/api/data-points.json', payload, server_timeout=self.timeout)
+        url = self.site_url + '/api/data-points.json'
+
+        fetch_page = post_request_with_retries(url, payload, server_timeout=self.timeout)
 
         if fetch_page.status_code == requests.codes.ok:
             response_payload = fetch_page.json()
@@ -315,7 +317,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
         self.current_page = None
 
     def filter(self, **kwargs):
-        query = PDKDataSourceQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataSourceQuery(self.token, self.site_url, self.timeout, page_size=self.page_size)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
@@ -326,7 +328,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
         return query
 
     def exclude(self, **kwargs):
-        query = PDKDataSourceQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataSourceQuery(self.token, self.site_url, self.timeout, page_size=self.page_size)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
@@ -337,7 +339,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
         return query
 
     def order_by(self, *args):
-        query = PDKDataSourceQuery(self.token, self.site_url, self.page_size)
+        query = PDKDataSourceQuery(self.token, self.site_url, self.timeout, page_size=self.page_size)
 
         query.filters = list(self.filters)
         query.excludes = list(self.excludes)
