@@ -279,14 +279,14 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
             fetch_page.raise_for_status()
 
 class DatetimeEncoder(json.JSONEncoder):
-    def default(self, obj): # pylint: disable=arguments-differ, method-hidden
-        if isinstance(obj, datetime.datetime):
-            return obj.isoformat()
+    def default(self, o): # pylint: disable=arguments-differ, method-hidden
+        if isinstance(o, datetime.datetime):
+            return o.isoformat()
 
         try:
-            return super(DatetimeEncoder, obj).default(obj)
+            return super(DatetimeEncoder, o).default(o)
         except TypeError:
-            return str(obj)
+            return str(o)
 
 
 class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes, useless-object-inheritance
