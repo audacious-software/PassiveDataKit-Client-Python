@@ -209,7 +209,7 @@ class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes,
         return value
 
     def next(self):
-        return self.__next__()
+        return self.__next__() # pylint: disable=unnecessary-dunder-call
 
     def __getitem__(self, slice_item):
         if isinstance(slice_item, int): # pylint: disable=no-else-return
@@ -376,7 +376,7 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
         return value
 
     def next(self):
-        return self.__next__()
+        return self.__next__() # pylint: disable=unnecessary-dunder-call
 
     def __getitem__(self, slice_item):
         if isinstance(slice_item, int): # pylint: disable=no-else-return
