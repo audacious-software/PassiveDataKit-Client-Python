@@ -28,7 +28,7 @@ def post_request_with_retries(url, payload, max_retry_duration=120, initial_retr
             if server_timeout is not None:
                 query = requests.post(url, data=payload, timeout=server_timeout)
             else:
-                query = requests.post(url, data=payload)
+                query = requests.post(url, data=payload, timeout=600)
 
             if query.status_code != 200:
                 print('CODE: ' + str(query.status_code))
