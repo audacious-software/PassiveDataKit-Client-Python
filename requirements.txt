@@ -1,5 +1,5 @@
 arrow==0.14.7; python_version < '3.0'
-arrow==1.2.2; python_version >= '3.0'
+arrow==1.2.3; python_version >= '3.0'
 bandit==1.7.4; python_version >= '3.7'
 bandit==1.7.1; python_version == '3.6'
 bandit==1.6.2; python_version < '3.0'
