@@ -23,7 +23,7 @@ jobs:
             python3 -m venv /home/circleci/venv
             . /home/circleci/venv/bin/activate
             pip install wheel
-            pip install -r requirements.txt --progress-bar off
+            pip install -r requirements.txt
             pylint pdk_client
             bandit -r .      
       - save_cache:
@@ -49,7 +49,7 @@ jobs:
             virtualenv /home/circleci/venv
             . /home/circleci/venv/bin/activate
             pip install wheel
-            pip install -r requirements.txt --progress-bar off
+            pip install -r requirements.txt
             pylint pdk_client
             bandit -r .      
       - save_cache:

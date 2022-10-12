@@ -121,6 +121,9 @@ class PDKClient(object): # pylint: disable=useless-object-inheritance
     def query_data_sources(self, *args, **kwargs): # pylint: disable=unused-argument
         return PDKDataSourceQuery(self.token, self.site_url, self.timeout, **kwargs).exclude(pk=None)
 
+    def update_data_sources(self, *args, **kwargs): # pylint: disable=unused-argument
+        return PDKDataSourceUpdate(self.token, self.site_url, self.timeout, **kwargs).exclude(pk=None)
+
 
 class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes, useless-object-inheritance
     def __init__(self, token, site_url, timeout, *args, **kwargs): # pylint: disable=unused-argument
@@ -288,7 +291,6 @@ class DatetimeEncoder(json.JSONEncoder):
         except TypeError:
             return str(o)
 
-
 class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes, useless-object-inheritance
     def __init__(self, token, site_url, timeout, *args, **kwargs): # pylint: disable=unused-argument
         self.token = token
@@ -429,3 +431,73 @@ class PDKDataSourceQuery(object): # pylint: disable=too-many-instance-attributes
             self.current_page = response_payload['matches']
         else:
             fetch_page.raise_for_status()
+
+class PDKDataSourceUpdate(object): # pylint: disable=too-many-instance-attributes, useless-object-inheritance
+    def __init__(self, token, site_url, timeout, *args, **kwargs): # pylint: disable=unused-argument
+        self.token = token
+        self.site_url = site_url
+        self.timeout = timeout
+
+        self.filters = []
+        self.excludes = []
+        self.updates = []
+
+        if kwargs:
+            self.filters.append(kwargs)
+
+        self.total_updated = 0
+
+    def filter(self, **kwargs):
+        query = PDKDataSourceUpdate(self.token, self.site_url, self.timeout)
+
+        query.filters = list(self.filters)
+        query.excludes = list(self.excludes)
+        query.updates = list(self.updates)
+
+        query.filters.append(kwargs)
+
+        return query
+
+    def exclude(self, **kwargs):
+        query = PDKDataSourceUpdate(self.token, self.site_url, self.timeout)
+
+        query.filters = list(self.filters)
+        query.excludes = list(self.excludes)
+        query.updates = list(self.updates)
+
+        query.excludes.append(kwargs)
+
+        return query
+
+    def update(self, **kwargs):
+        query = PDKDataSourceUpdate(self.token, self.site_url, self.timeout)
+
+        query.filters = list(self.filters)
+        query.excludes = list(self.excludes)
+        query.updates = list(self.updates)
+
+        query.updates.append(kwargs)
+
+        return query.execute()
+
+    def updated(self):
+        return self.total_updated
+
+    def execute(self): # pylint: disable=inconsistent-return-statements
+        payload = {
+            'token': self.token,
+            'filters': json.dumps(self.filters, cls=DatetimeEncoder),
+            'excludes': json.dumps(self.excludes, cls=DatetimeEncoder),
+            'updates': json.dumps(self.updates, cls=DatetimeEncoder),
+        }
+
+        response = post_request_with_retries(self.site_url + '/api/data-sources/update.json', payload, server_timeout=self.timeout)
+
+        if response.status_code == requests.codes.ok:
+            response_payload = response.json()
+
+            self.total_updated = response_payload['updated']
+
+            return self.total_updated
+
+        response.raise_for_status()
