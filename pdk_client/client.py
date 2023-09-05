@@ -68,7 +68,7 @@ def post_request_with_retries(url, payload, max_retry_duration=480, initial_retr
     if last_error is not None:
         raise last_error # pylint: disable=raising-bad-type
 
-    raise Exception('Unknown error occurred.')
+    raise Exception('Unknown error occurred.') # pylint: disable=broad-exception-raised
 
 class PDKClient(object): # pylint: disable=useless-object-inheritance
     def __init__(self, **kwargs):
