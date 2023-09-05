@@ -1,8 +1,6 @@
 # pylint: disable=line-too-long, no-member, chained-comparison
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
-
 from builtins import str, object # pylint: disable=redefined-builtin
 
 import datetime
@@ -17,7 +15,10 @@ from past.utils import old_div
 
 PDK_API_DEFAULT_PAGE_SIZE = 100
 
-def post_request_with_retries(url, payload, max_retry_duration=120, initial_retry_duration=3.75, server_timeout=60):
+class PDKClientTimeout(Exception):
+    pass
+
+def post_request_with_retries(url, payload, max_retry_duration=480, initial_retry_duration=3.75, server_timeout=None):
     query = None
     last_error = None
 
@@ -31,7 +32,10 @@ def post_request_with_retries(url, payload, max_retry_duration=120, initial_retr
                 query = requests.post(url, data=payload, timeout=600)
 
             if query.status_code != 200:
-                print('CODE: ' + str(query.status_code))
+                logging.warning('HTTP Code: %s', query.status_code)
+
+            if query.status_code == 504:
+                raise PDKClientTimeout('Server timeout error (504)')
 
             if query.status_code == requests.codes.ok:
                 return query
@@ -47,6 +51,12 @@ def post_request_with_retries(url, payload, max_retry_duration=120, initial_retr
             last_error = error
         except requests.exceptions.ConnectionError as error:
             logging.warning(str(error))
+            logging.warning('Retrying in %.2f seconds...', initial_retry_duration)
+
+            last_error = error
+
+        except PDKClientTimeout as error:
+            logging.warning('%s - %s' , url, str(error))
             logging.warning('Retrying in %.2f seconds...', initial_retry_duration)
 
             last_error = error
@@ -123,7 +133,6 @@ class PDKClient(object): # pylint: disable=useless-object-inheritance
 
     def update_data_sources(self, *args, **kwargs): # pylint: disable=unused-argument
         return PDKDataSourceUpdate(self.token, self.site_url, self.timeout, **kwargs).exclude(pk=None)
-
 
 class PDKDataPointQuery(object): # pylint: disable=too-many-instance-attributes, useless-object-inheritance
     def __init__(self, token, site_url, timeout, *args, **kwargs): # pylint: disable=unused-argument
