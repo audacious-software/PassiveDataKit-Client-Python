@@ -56,7 +56,7 @@ def post_request_with_retries(url, payload, max_retry_duration=480, initial_retr
             last_error = error
 
         except PDKClientTimeout as error:
-            logging.warning('%s - %s' , url, str(error))
+            logging.warning('%s - %s', url, str(error))
             logging.warning('Retrying in %.2f seconds...', initial_retry_duration)
 
             last_error = error
