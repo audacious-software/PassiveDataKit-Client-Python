@@ -73,7 +73,7 @@ The state of the token  may be checked while in use:
     is_expired = client.expired()
     
     # Returns datetime.datetime object encoding the expiration date.
-    when_expires = client.expires()
+    when_expires = client.expires
 
     # Returns True if the client is authorized to communicate with the server, False otherwise.
     # May change when the token expires.
