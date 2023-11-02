@@ -47,8 +47,8 @@ inspiration and functions very similarly.
     query.count()
     
     # Filter sources
-    filtered_query = query.filter(identifier__startswith='1')
-    filtered_query.filter(identifier__startswith='1').count()
+    filtered_query = query.filter(source__startswith='1')
+    filtered_query.filter(source__startswith='1').count()
     
     # Iterate over all matching items in query.
     for source in filtered_query:
