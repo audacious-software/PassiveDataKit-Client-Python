@@ -105,7 +105,7 @@ class PDKClient(object): # pylint: disable=useless-object-inheritance
 
     def expired(self):
         if self.expires is None:
-            return True
+            return False
 
         now = arrow.utcnow().datetime
 
