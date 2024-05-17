@@ -18,6 +18,9 @@ PDK_API_DEFAULT_PAGE_SIZE = 100
 class PDKClientTimeout(Exception):
     pass
 
+class PDKClientServerError(Exception):
+    pass
+
 def post_request_with_retries(url, payload, max_retry_duration=480, initial_retry_duration=3.75, server_timeout=None):
     query = None
     last_error = None
